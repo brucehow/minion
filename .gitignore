@@ -1,0 +1,22 @@
+# Mac files
+*.DS_STORE
+
+# Target files
+out/
+target/
+
+# Compiled files
+*.class
+
+# Maven files
+pom.xml
+
+# Private files
+Constants.*
+Database.*
+
+# Configurations
+.vscode/
+.settings/
+.classpath
+.project
