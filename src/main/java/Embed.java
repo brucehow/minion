@@ -94,6 +94,28 @@ public class Embed {
     }
 
     /**
+     * Generates the TFT lobby embed for the particular object
+     * @param guild The guild to generate for
+     * @return The MessageEmbed object for the open lobby
+     */
+    public MessageEmbed getTFTLobbyEmbed(Guild guild) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setColor(Color.decode("#f7ff68"));
+        if (TFT.getLobbyPlayers().size() == 0) {
+            suffix = "`0`\n`None`\n\n" + guild.getPublicRole().getAsMention() +" React to this post to automatically signup";
+            eb.addField("**" + title + "**", prefix+suffix, true);
+        } else {
+            suffix = "`" + TFT.getLobbyPlayers().size() + "`\n`";
+            for (User user : TFT.getLobbyPlayers()) {
+                suffix += "\n" + user.getName() + "#" + user.getDiscriminator();
+            }
+            suffix += "`\n\n" + guild.getPublicRole().getAsMention() +" React to this post to automatically signup";
+            eb.addField("**" + title + "**", prefix+suffix, true);
+        }
+        return eb.build();
+    }
+
+    /**
      * Generates the finalised lobby embed for the particular object
      * @param team1 The first team
      * @param team2 The second team

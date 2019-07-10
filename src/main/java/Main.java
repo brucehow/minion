@@ -33,6 +33,7 @@ public class Main extends ListenerAdapter {
             jda.addEventListener(new Lobby());
             jda.addEventListener(new Points());
             jda.addEventListener(new Leaderboard());
+            jda.addEventListener(new TFT());
             jda.getPresence().setStatus(OnlineStatus.ONLINE);
             jda.getPresence().setGame(Game.playing(Constants.STATUS));
         } catch (Exception e) {
