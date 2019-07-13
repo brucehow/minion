@@ -88,7 +88,7 @@ public class TFT extends ListenerAdapter {
             });
             channel.sendMessage(Embed.successEmbed("TFT Lobby Created", "Successfully created a lobby in the " + 
                 post.getAsMention() + " channel")).queue();
-            Main.output("New lobby created {" + title + ", " + desc + "} by " + user);
+            Main.output("New TFT Lobby " + instance + " created by " + user);
         }
         else if (content.startsWith(".tft")) {
             if (!member.getRoles().contains(Constants.getModRole(guild)) && !Constants.isWhitelist(user)) {

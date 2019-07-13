@@ -29,7 +29,7 @@ public class Points extends ListenerAdapter {
         MessageChannel channel = event.getChannel();
         Guild guild = event.getGuild();
 
-        if (content.equalsIgnoreCase(".points") && member.getRoles().contains(Constants.getMemberRole(guild))) {
+        if (content.equalsIgnoreCase(".points") && member.getRoles().contains(Constants.getDevRole(guild))) {
             String discord = user.getName() + "#" + user.getDiscriminator();
 
             ResultSet result = Database.getIndividualPoint(discord);

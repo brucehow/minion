@@ -4,6 +4,7 @@ import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.User;
 
 import java.awt.*;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 
 /**
@@ -111,6 +112,7 @@ public class Embed {
             }
             suffix += "`\n\n" + guild.getPublicRole().getAsMention() +" React to this post to automatically signup";
             eb.addField("**" + title + "**", prefix+suffix, true);
+            eb.addField("test", prefix, true);
         }
         return eb.build();
     }
@@ -147,6 +149,51 @@ public class Embed {
             eb.addField("Team 1 (" + team2mmr / team2.size() + " MMR)", players2, true);
             eb.addField("Team 2 (" + team1mmr / team1.size() + " MMR)", players1, true);
         }
+        return eb.build();
+    }
+
+    /**
+     * Generates the profile embed for the particular object
+     * @param guild The guild to generate for
+     * @return The MessageEmbed object for the open lobby
+     */
+    public static MessageEmbed getProfileEmbed(ResultSet result) {
+        EmbedBuilder eb = new EmbedBuilder();
+        String summoner = "Unknown";
+        String position = null;
+        String join_ts = "00/00/0000";
+        String rift_points = "0";
+        Guild emoteGuild = Main.jda.getGuildById(Constants.EMOTES_SERVER);
+        String[] badges = null;
+        try {
+            result.next();
+            badges = result.getString("badges").split(",");
+            summoner = result.getString("summoner");
+            position = result.getString("position");
+            join_ts = result.getString("join_ts").split(" ")[0];
+            join_ts = join_ts.substring(8, 10) + "/" + join_ts.substring(5, 7) + "/" + join_ts.substring(0, 4);
+            rift_points = result.getString("points");
+        } catch (Exception e) {
+            Main.output("Failed to get badges from user");
+            e.printStackTrace();
+        }
+        if (position == null) {
+            position = "";
+        } else {
+            position = "\n" + position;
+        }
+        eb.addField("**Member Info**", summoner + position + "\nMember since " + join_ts + "\n\u200e", false);
+        if (badges != null && !badges[0].equals("Empty")) {
+            String badgeList = "";
+            for (String badge : badges) {
+                badgeList += emoteGuild.getEmotesByName(badge, true).get(0).getAsMention() + " ";
+            }
+            eb.setDescription(badgeList + "\n\u200e");
+        }
+
+        eb.addField("**Rift Champions**", rift_points + " Points\n0W 0L (0% WR)\n", true);
+        eb.addField("**Teamfight Tacticians**", "N/A\nN/A\n\u200e", true);
+        eb.setFooter("Badges can be obtained through participation and accomplishments", null);
         return eb.build();
     }
 }

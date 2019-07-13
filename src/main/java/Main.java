@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class Main extends ListenerAdapter {
     public static Database db;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private static JDA jda;
+    public static JDA jda;
 
     public static void main(String[] args) {
         try {
@@ -32,6 +32,7 @@ public class Main extends ListenerAdapter {
             jda.addEventListener(new AutoRole());
             jda.addEventListener(new Lobby());
             jda.addEventListener(new Points());
+            jda.addEventListener(new Profile());
             jda.addEventListener(new Leaderboard());
             jda.addEventListener(new TFT());
             jda.getPresence().setStatus(OnlineStatus.ONLINE);
