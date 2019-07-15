@@ -43,13 +43,13 @@ public class Main extends ListenerAdapter {
 
         db = new Database();
         db.establishConnection();
+        Main.output("Successfully connected to MySQL");
 
         // Scheduler
         final Runnable rds = new Runnable() {
             @Override
             public void run() {
                 rdsReboot();
-                Main.output("Re-established connection with MySQL");
             }
         };
         scheduler.scheduleAtFixedRate(rds, 0, 5, TimeUnit.HOURS);
@@ -68,5 +68,6 @@ public class Main extends ListenerAdapter {
     
     private static void rdsReboot() {
         Database.establishConnection();
+        Main.output("Re-established connection with MySQL");
     }
 }

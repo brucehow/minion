@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author Bruce How
  * @github brucehow
- * @version 1.5
+ * @version 1.3
  */
 public class Register extends ListenerAdapter {
 

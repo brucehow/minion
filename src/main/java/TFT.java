@@ -12,14 +12,16 @@ import java.util.function.Consumer;
  *
  * @author Bruce How
  * @github brucehow
- * @version 1.5
+ * @version 1.34
  */
 public class TFT extends ListenerAdapter {
 
     private static ArrayList<User> lobbyPlayers;
+    private static String priorityPlayers;
     private Message lobbyPost;
     private TextChannel post;
     private Embed tftlobby;
+    
 
     /**
      * Handles the lobby commands and its sub-commands
@@ -52,25 +54,20 @@ public class TFT extends ListenerAdapter {
 
             post = guild.getTextChannelById(Constants.getLobbyPostID());
 
-            String[] info = content.split(" ");
-            if (info.length != 3) {
-                Main.output("Invalid tft command with " + (info.length - 2) + " args instead of 1 by " + user);
-                // Error Message
-                channel.sendMessage(Embed.errorEmbed("Invalid Command", 
-                    "Please view the command usage below.\n\n`.tft start <instance>`" 
-                    + "\n\nReplace <instance> with the lobby letter (A-Z)")).queue();
-                return;
-            }
-
-            String instance = info[2].toUpperCase();
-
             lobbyPlayers = new ArrayList<User>();
 
             // TFT set variable
-            String title = "TFTacticians - Lobby " + instance;
+            String title = "TFTacticians - Lobby Signup ";
             String desc = "Be the last person standing in a round-based strategy game that pits you against"
             + " seven opponents in a free-for-all race to build a powerful team that fights on your behalf.";
-            
+            priorityPlayers = null;
+
+            // Check for priorities
+            String[] info = content.split(" ");
+            if (info.length >= 3) {
+                priorityPlayers = content.substring(11); 
+            }
+
             tftlobby = new Embed(title, desc);
 
             // Consumer used without lambda - Consumer required for lobbyPost = message;
@@ -79,16 +76,24 @@ public class TFT extends ListenerAdapter {
                     post.deleteMessageById(message.getId()).queue();
                 }
             });
-            post.sendMessage(tftlobby.getTFTLobbyEmbed(event.getGuild())).queue(new Consumer<Message>() {
+            post.sendMessage(tftlobby.getTFTLobbyEmbed(event.getGuild(), priorityPlayers)).queue(new Consumer<Message>() {
                 public void accept(Message message) {
                     Main.output("TFT Lobby message ID (" + message.getId() + ")");
                     lobbyPost = message;
-                    post.addReactionById(lobbyPost.getId(), "\uD83C\uDFC6").queue();
+                    Guild emoteGuild = Main.jda.getGuildById(Constants.EMOTES_SERVER);
+                    Emote tftemote = emoteGuild.getEmotesByName("TFTacticiansParticipant", true).get(0);
+                    post.addReactionById(lobbyPost.getId(), tftemote).queue();
                 }
             });
-            channel.sendMessage(Embed.successEmbed("TFT Lobby Created", "Successfully created a lobby in the " + 
+            if (priorityPlayers != null) {
+                channel.sendMessage(Embed.successEmbed("TFT Lobby Created", "Successfully created a lobby in the " + 
+                post.getAsMention() + " channel\n\nThe following players have been given priority\n`" + priorityPlayers + "`")).queue();
+                Main.output("New TFT Lobby with priority (" + priorityPlayers + ") by " + user);
+            } else {
+                channel.sendMessage(Embed.successEmbed("TFT Lobby Created", "Successfully created a lobby in the " + 
                 post.getAsMention() + " channel")).queue();
-            Main.output("New TFT Lobby " + instance + " created by " + user);
+                Main.output("New TFT Lobby created by " + user);
+            }
         }
         else if (content.startsWith(".tft")) {
             if (!member.getRoles().contains(Constants.getModRole(guild)) && !Constants.isWhitelist(user)) {
@@ -97,7 +102,7 @@ public class TFT extends ListenerAdapter {
             }
             Main.output("Invalid .tft command without a clause by " + user);
                 // Error Message
-                channel.sendMessage(Embed.errorEmbed("Invalid Command", "Please view the command usage below.\n\n`.tft start\n.tft end`")).queue();
+                channel.sendMessage(Embed.errorEmbed("Invalid Command", "Please view the command usage below.\n\n`.tft start <priorities>\n.tft end`\n\nFor example `.tft start Bruce#3218 don#1234`")).queue();
                 return;
         }
     }
@@ -134,7 +139,7 @@ public class TFT extends ListenerAdapter {
             lobbyPlayers.add(event.getUser());
             Main.output("New lobby registration by user " + event.getUser());
 
-            lobbyPost.editMessage(tftlobby.getTFTLobbyEmbed(event.getGuild())).queue();
+            lobbyPost.editMessage(tftlobby.getTFTLobbyEmbed(event.getGuild(), priorityPlayers)).queue();
         }
     }
 
@@ -150,17 +155,25 @@ public class TFT extends ListenerAdapter {
             lobbyPlayers.remove(event.getUser());
             Main.output("New lobby registration removal by user " + event.getUser());
 
-            lobbyPost.editMessage(tftlobby.getTFTLobbyEmbed(event.getGuild())).queue();
+            lobbyPost.editMessage(tftlobby.getTFTLobbyEmbed(event.getGuild(), priorityPlayers)).queue();
         }
     }
 
     /**
-     * Closes the current lobby and shuffles the players
-     * Can be called manually via '.lobby end' or when the lobby reaches the player limit
+     * Closes the current tft lobby and shuffles the players
+     * Can be called manually via '.tft end'
      */
     public void endLobby() {
         post.deleteMessageById(lobbyPost.getId()).queue(); // Delete lobby post
         lobbyPost = null; // Ends the lobby
+
+        // Sends an @everyone message and deletes it
+        post.sendMessage(post.getGuild().getPublicRole().getAsMention()).queue(new Consumer<Message>() {
+            public void accept(Message message) {
+                post.deleteMessageById(message.getId()).queue();
+            }
+        });
+        post.sendMessage(tftlobby.getTFTTeams(getLobbyPlayers(), priorityPlayers)).queue();
     }
 
     public static ArrayList<User> getLobbyPlayers() {

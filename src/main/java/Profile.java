@@ -13,7 +13,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
  *
  * @author Bruce How
  * @github brucehow
- * @version 1.0
+ * @version 1.34
  */
 public class Profile extends ListenerAdapter {
 
