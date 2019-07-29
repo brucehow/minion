@@ -102,7 +102,7 @@ public class Points extends ListenerAdapter {
                     playerList += info[i] + " ";
                     players.add(info[i]);
                 }
-                String result = Main.db.addPoints(players, 20);
+                String result = Database.addPoints(players, 20);
                 if (result.equals("SUCCESS")) {
                     channel.sendMessage(Embed.successEmbed("Points Increased", "Successfully added 30 points to the " +
                         "following players\n\n`" + playerList + "`")).queue();
@@ -121,7 +121,7 @@ public class Points extends ListenerAdapter {
                     playerList += info[i] + " ";
                     players.add(info[i]);
                 }
-                String result = Main.db.addPoints(players, 10);
+                String result = Database.addPoints(players, 10);
                 if (result.equals("SUCCESS")) {
                     channel.sendMessage(Embed.successEmbed("Points Increased", "Successfully added 15 points to the " +
                         "following players\n\n`" + playerList + "`")).queue();
@@ -151,7 +151,7 @@ public class Points extends ListenerAdapter {
                     playerList += info[i] + " ";
                     players.add(info[i]);
                 }
-                String result = Main.db.addPoints(players, 5);
+                String result = Database.addPoints(players, 5);
                 if (result.equals("SUCCESS")) {
                     channel.sendMessage(Embed.successEmbed("Points Increased", "Successfully added 5 points to the " +
                             "following players\n\n`" + playerList + "`")).queue();

@@ -41,9 +41,8 @@ public class Main extends ListenerAdapter {
             e.printStackTrace();
         }
 
-        db = new Database();
-        db.establishConnection();
-        Main.output("Successfully connected to MySQL");
+        Main.output("Attempting to connect to MySQL");
+        Database.establishConnection(true);
 
         // Scheduler
         final Runnable rds = new Runnable() {
@@ -67,7 +66,7 @@ public class Main extends ListenerAdapter {
     }
     
     private static void rdsReboot() {
-        Database.establishConnection();
-        Main.output("Re-established connection with MySQL");
+        Database.establishConnection(false);
+        Main.output("Attempting to re-established connection with MySQL");
     }
 }

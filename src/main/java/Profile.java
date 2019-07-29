@@ -40,7 +40,8 @@ public class Profile extends ListenerAdapter {
             }
 
             ResultSet result = Database.getProfileFromDiscord(discord);
-            channel.sendMessage(Embed.getProfileEmbed(result)).queue();
+            ResultSet tftStats = Database.getTFTFromDiscord(discord);
+            channel.sendMessage(Embed.getProfileEmbed(result, tftStats)).queue();
             return;
         } else if (content.equalsIgnoreCase(".profile help")) {
             channel.sendMessage(Embed.errorEmbed("Invalid Profile Command", "Please view the command usage below\n\n`.profile <discord>` – view a user's profile by discord"
@@ -71,7 +72,8 @@ public class Profile extends ListenerAdapter {
                     return;
             }
             ResultSet result = Database.getProfileFromDiscord(discord);
-            channel.sendMessage(Embed.getProfileEmbed(result)).queue();
+            ResultSet tftStats = Database.getTFTFromDiscord(discord);
+            channel.sendMessage(Embed.getProfileEmbed(result, tftStats)).queue();
             return;
         }
     }

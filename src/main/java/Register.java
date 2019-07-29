@@ -51,7 +51,7 @@ public class Register extends ListenerAdapter {
             String summonerName = info[3].trim();
             String discord = info[4].trim();
             Main.output("Registering new member {" + name + ", " + studentID + ", " + summonerName + ", " + discord + "} by " + user);
-            String result = Main.db.addUser(studentID, name, discord, summonerName);
+            String result = Database.addUser(studentID, name, discord, summonerName);
             if (result.equals("SUCCESS")) {
                 channel.sendMessage(Embed.successEmbed("Registration Complete",
                         "Successfully registered new member\n\n`" + studentID + ", "+ name + ", "+ discord + ", "+ summonerName + "`")).queue();

@@ -21,6 +21,8 @@ public class TFT extends ListenerAdapter {
     private Message lobbyPost;
     private TextChannel post;
     private Embed tftlobby;
+
+    public static String scorelog = "";
     
 
     /**
@@ -104,6 +106,24 @@ public class TFT extends ListenerAdapter {
                 // Error Message
                 channel.sendMessage(Embed.errorEmbed("Invalid Command", "Please view the command usage below.\n\n`.tft start <priorities>\n.tft end`\n\nFor example `.tft start Bruce#3218 don#1234`")).queue();
                 return;
+        }
+        else if (content.startsWith(".score") && member.getRoles().contains(Constants.getModRole(guild))) {
+            String[] users = content.split("\n");
+            if (users.length == 9) {
+                scorelog = "";
+                String result = Database.addTFTPoints(users); // summoner names
+                if (!result.equals("SUCCESS")) {
+                    Main.output(result);
+                    channel.sendMessage(Embed.errorEmbed("Oh no!", "Something went wrong, please check the logs or view the summary below\n\n`" + result + "`")).queue();;
+                    return;
+                }
+                channel.sendMessage(Embed.successEmbed("Points Increased", "Successfully updated the values for the appropriate users.\nPlease confirm the update summary below\n\n`"
+                + scorelog + "`")).queue();
+            } else {
+                // Error Message
+                channel.sendMessage(Embed.errorEmbed("Invalid Parameters", "Please view the command usage below.\n\n`.score`\n`<rank1_summoner>`\n`<rank2_summoner>`\n`...`\n`<rank7_summoner>`\n`<rank8_summoner>`\n")).queue();
+                return;
+            }
         }
     }
 

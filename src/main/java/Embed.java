@@ -227,7 +227,7 @@ public class Embed {
      * @param guild The guild to generate for
      * @return The MessageEmbed object for the open lobby
      */
-    public static MessageEmbed getProfileEmbed(ResultSet result) {
+    public static MessageEmbed getProfileEmbed(ResultSet result, ResultSet tftResult) {
         EmbedBuilder eb = new EmbedBuilder();
         String summoner = "Unknown";
         String position = null;
@@ -240,8 +240,14 @@ public class Embed {
         int losses = 0;
         int ace = 0;
         int mvp = 0;
+        int tftwins = 0;
+        int tftpoints = 0;
+        String avgrank = "0";
+        int topfour = 0;
+        int tftgames = 0;
         try {
             result.next();
+            tftResult.next();
             badges = result.getString("badges").split(",");
             summoner = result.getString("summoner");
             position = result.getString("position");
@@ -255,6 +261,11 @@ public class Embed {
             losses = Integer.parseInt(result.getString("losses"));
             mvp = Integer.parseInt(result.getString("mvp"));
             ace = Integer.parseInt(result.getString("ace"));
+            tftwins = Integer.parseInt(tftResult.getString("wins"));
+            tftpoints = Integer.parseInt(tftResult.getString("points"));
+            topfour = Integer.parseInt(tftResult.getString("topfour"));
+            avgrank = tftResult.getString("avgrank");
+            tftgames = tftResult.getShort("games");
         } catch (Exception e) {
             Main.output("Failed to get badges from user");
             e.printStackTrace();
@@ -299,13 +310,26 @@ public class Embed {
         } else if (!rift_rank.equals("Unranked")) {
             rift_rank = rift_rank + "th";
         }
+
+        double avgrankCalc = Double.parseDouble(avgrank);
+        avgrankCalc = avgrankCalc / tftgames;
+        avgrank = Integer.toString((int) Math.floor(avgrankCalc));
+        if (avgrank.endsWith("1")) {
+            avgrank = "**" + avgrank + "st**";
+        } else if (avgrank.endsWith("2")) {
+            avgrank = "**" + avgrank + "nd**";
+        } else if (avgrank.endsWith("3")) {
+            avgrank = "**" + avgrank + "rd**";
+        } else {
+            avgrank = avgrank + "th";
+        }
         
         if (rift_rank.length() == 3 || rift_rank.equals("10th")) {
             rift_rank = "**" + rift_rank + "**";
         }
         eb.addField("**Rift Champions**", rift_points + " Points (" + rift_rank + ")\n" + wins + "W " + losses + "L " + 
         "(" + winrateDisplay + " WR)\n" + mvp + " MVP " + ace + " ACE\n\u200e", true);
-        eb.addField("**Teamfight Tacticians**", "0 Points\n0 W (0 Top 4)\n0th Place Avg", true);
+        eb.addField("**Teamfight Tacticians**", tftpoints + " Points\n" + tftwins + " W (" + topfour + " Top 4)\n" + avgrank + " Place Avg", true);
         eb.setFooter("Badges can be obtained through participation and accomplishments", null);
         return eb.build();
     }
