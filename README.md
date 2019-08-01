@@ -25,3 +25,7 @@ More info on the League of Legends API reference can be found [here](https://dev
 Teamfight Tacticians is another weekly event run by UWALC. It involves several 8-man in-house games featuring Riot's new game Teamfight Tactics. Minion is responsible for drafting players into teams of 8.
 
 Due to the nature of the game (requires 8 players), it is not always possible for all players to be drafted into a team. The drafting algorithm takes into account players who miss out on games and will prioritise them for the next lobby. 
+
+## License
+
+[MIT License](https://github.com/brucehow/Minion/blob/master/LICENSE), Copyright © Bruce How 2019
