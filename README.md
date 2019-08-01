@@ -11,6 +11,9 @@ Positional Role – Discord users are automatically assigned to their appropriat
 
 Member Roles – Users who have signed up (member of UWALC) are automatically assigned the Member role. Users without this role have limited server accessibility.
 
+### **Member Registrations**
+Member registration can be completed with a few lines discord commands allowing for efficientcy.
+
 ### **Rift Champions**
 Rift Champions is a weekly event run by UWALC. It involves several 10-man in-house games where club members can gather points for their participation and performance. This event was on every Fridays between 7PM to 11PM and occured over the course of Semester 1.
 
@@ -20,3 +23,5 @@ More info on the League of Legends API reference can be found [here](https://dev
 
 ### **Teamfight Tacticians**
 Teamfight Tacticians is another weekly event run by UWALC. It involves several 8-man in-house games featuring Riot's new game Teamfight Tactics. Minion is responsible for drafting players into teams of 8.
+
+Due to the nature of the game (requires 8 players), it is not always possible for all players to be drafted into a team. The drafting algorithm takes into account players who miss out on games and will prioritise them for the next lobby. 
