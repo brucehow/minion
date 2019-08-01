@@ -290,9 +290,7 @@ public class Embed {
             int games = wins + losses;
             winrate = (double) wins/games * 100;
             winrateDisplay = Integer.toString((int) Math.round(winrate)) + "%";
-            if (summoner.equals("Dota 2")) {
-                winrateDisplay = "**69%**";
-            } else if ((int) Math.round(winrate) > 60) {
+            if ((int) Math.round(winrate) > 60) {
                 winrateDisplay = "**" + winrateDisplay + "**";
             }
         }

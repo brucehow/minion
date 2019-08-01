@@ -93,7 +93,6 @@ public class RiotAPI {
 		}
 		return summonerName + " (Unranked)";
 	}
-
 }
 
 
