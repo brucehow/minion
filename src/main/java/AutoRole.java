@@ -36,7 +36,7 @@ public class AutoRole extends ListenerAdapter {
             Guild guild = event.getGuild();
             User user = event.getUser();
             user.openPrivateChannel().queue((privateChannel) -> {
-                privateChannel.sendMessage(Embed.neutralEmbed(Constants.header[random] + " :wave:", Constants.welcomeMsg(user, guild)));
+                privateChannel.sendMessage(Embed.neutralEmbed(Constants.header[random] + " :wave:", Constants.welcomeMsg(user, guild))).queue();
             });
             return;
         }

@@ -299,11 +299,11 @@ public class Embed {
             rift_points = "**" + rift_points + "**";
         }
 
-        if (rift_rank.endsWith("1")) {
+        if (rift_rank.endsWith("1") && !rift_rank.endsWith("11")) {
             rift_rank = rift_rank + "st";
-        } else if (rift_rank.endsWith("2")) {
+        } else if (rift_rank.endsWith("2") && !rift_rank.endsWith("12")) {
             rift_rank = rift_rank + "nd";
-        } else if (rift_rank.endsWith("3") && !rift_rank.startsWith("1")) {
+        } else if (rift_rank.endsWith("3") && !rift_rank.endsWith("13")) {
             rift_rank = rift_rank + "rd";
         } else if (!rift_rank.equals("Unranked")) {
             rift_rank = rift_rank + "th";
@@ -312,11 +312,11 @@ public class Embed {
         double avgrankCalc = Double.parseDouble(avgrank);
         avgrankCalc = avgrankCalc / tftgames;
         avgrank = Integer.toString((int) Math.floor(avgrankCalc));
-        if (avgrank.endsWith("1")) {
+        if (avgrank.endsWith("1") && !avgrank.endsWith("11")) {
             avgrank = "**" + avgrank + "st**";
-        } else if (avgrank.endsWith("2")) {
+        } else if (avgrank.endsWith("2") && !avgrank.endsWith("12")) {
             avgrank = "**" + avgrank + "nd**";
-        } else if (avgrank.endsWith("3") && !avgrank.startsWith("1")) {
+        } else if (avgrank.endsWith("3") && !avgrank.endsWith("13")) {
             avgrank = "**" + avgrank + "rd**";
         } else {
             avgrank = avgrank + "th";
