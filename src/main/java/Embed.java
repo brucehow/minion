@@ -303,7 +303,7 @@ public class Embed {
             rift_rank = rift_rank + "st";
         } else if (rift_rank.endsWith("2")) {
             rift_rank = rift_rank + "nd";
-        } else if (rift_rank.endsWith("3")) {
+        } else if (rift_rank.endsWith("3") && !rift_rank.startsWith("1")) {
             rift_rank = rift_rank + "rd";
         } else if (!rift_rank.equals("Unranked")) {
             rift_rank = rift_rank + "th";
@@ -316,7 +316,7 @@ public class Embed {
             avgrank = "**" + avgrank + "st**";
         } else if (avgrank.endsWith("2")) {
             avgrank = "**" + avgrank + "nd**";
-        } else if (avgrank.endsWith("3")) {
+        } else if (avgrank.endsWith("3") && !avgrank.startsWith("1")) {
             avgrank = "**" + avgrank + "rd**";
         } else {
             avgrank = avgrank + "th";
