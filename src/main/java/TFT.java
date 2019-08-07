@@ -125,6 +125,24 @@ public class TFT extends ListenerAdapter {
                 return;
             }
         }
+        else if (content.startsWith(".missed") && member.getRoles().contains(Constants.getModRole(guild))) {
+            String[] users = content.split("\n");
+            if (users.length > 1) {
+                scorelog = "";
+                String result = Database.addTFTMissedPoints(users); // summoner names
+                if (!result.equals("SUCCESS")) {
+                    Main.output(result);
+                    channel.sendMessage(Embed.errorEmbed("Oh no!", "Something went wrong, please check the logs or view the summary below\n\n`" + result + "`")).queue();;
+                    return;
+                }
+                channel.sendMessage(Embed.successEmbed("Points Increased", "Successfully updated the values for the appropriate users.\nPlease confirm the update summary below\n\n`"
+                + scorelog + "`")).queue();
+            } else {
+                // Error Message
+                channel.sendMessage(Embed.errorEmbed("Invalid Parameters", "Please view the command usage below.\n\n`.missed `\n`<summoner>`\n`<summoner>`\n`...`\n`<summoner>`\n`<summoner>`\n")).queue();
+                return;
+            }
+        }
     }
 
     /**
