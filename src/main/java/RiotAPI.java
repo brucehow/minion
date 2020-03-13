@@ -1,14 +1,12 @@
-import net.rithms.riot.api.ApiConfig;
-import net.rithms.riot.api.RiotApi;
-import net.rithms.riot.api.RiotApiException;
-import net.rithms.riot.api.endpoints.league.dto.LeaguePosition;
-import net.rithms.riot.api.endpoints.summoner.dto.Summoner;
-import net.rithms.riot.constant.Platform;
-import org.apache.commons.text.WordUtils;
+import org.json.*;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
 * RiotAPI configurations and rank fetching
@@ -17,17 +15,18 @@ import java.util.Set;
 * @github brucehow
 * @version 1.0
 */
+
 public class RiotAPI {
 
-	private RiotApi api;
 	private Map<String, Integer> tierMMR;
     private Map<String, Integer> divisionMMR;
+    public static final String summoner = "https://oc1.api.riotgames.com/lol/summoner/v4/summoners/by-name/";
+    public static final String encrypted = "https://oc1.api.riotgames.com/lol/summoner/v4/summoners/";
+    public static final String league = "https://oc1.api.riotgames.com/lol/league/v4/entries/by-summoner/";
+
+    
 
 	public RiotAPI() {
-		ApiConfig config = new ApiConfig().setKey(Constants.API_KEY);
-
-		api = new RiotApi(config);
-
 		tierMMR = new HashMap<>();
 		tierMMR.put("IRON", 0);
 		tierMMR.put("BRONZE", 500);
@@ -43,56 +42,138 @@ public class RiotAPI {
 		divisionMMR.put("IV", 100);
 		divisionMMR.put("III", 200);
 		divisionMMR.put("II", 300);
-		divisionMMR.put("I", 400);
-	}
-
-	public int fetchMMR(String player) {
-		if (player == null) {
-			return Constants.DEFAULT_MMR;
+        divisionMMR.put("I", 400);
+    }
+    
+    private static String fetch(String urlToRead) throws Exception {
+        StringBuilder result = new StringBuilder();
+        urlToRead += "?api_key=" + Constants.API_KEY;
+        URL url = new URL(urlToRead);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        String line;
+        while ((line = rd.readLine()) != null) {
+            result.append(line);
         }
-		try {
-			Summoner summoner = api.getSummonerByName(Platform.OCE, player);
-			Set<LeaguePosition> summonerRanks = api.getLeaguePositionsBySummonerId(Platform.OCE, summoner.getId());
-			for (LeaguePosition type : summonerRanks) {
-				if (type.getQueueType().equals("RANKED_SOLO_5x5")) {
-					int MMR = tierMMR.get(type.getTier()) + divisionMMR.get(type.getRank());
-					Main.output("Successfully fetched summoner " + player + " " + type.getTier() + " " + type.getRank()
-							+ " - " + MMR + " MMR");
-					return MMR;
-				}
-			}
-		} catch (RiotApiException e) {
-			Main.output("Fetched summoner " + player + " NONEXISTENT - 1200 MMR");
-			return Constants.DEFAULT_MMR;
-		}
-		Main.output("Fetched summoner " + player + " UNRANKED - 1200 MMR");
-		return Constants.DEFAULT_MMR;
-	}
+        rd.close();
+        return result.toString();
+    }
 
-
-	public static String fetchSummonerInfoString(String discord) {
-		String summonerName = Database.getSummonerFromDiscord(discord);
-		if (summonerName == null) {
-			return "Unknown (Unranked)";
+    public static String getSummonerEncryptedID(String ign) {
+        try {
+            String htmlign = ign.replaceAll(" ", "%20");
+            return new JSONObject(fetch(summoner + htmlign)).getString("id");
+        } catch (Exception e) {
+            Main.output("Failed to get summoner encrypted ID for ign " + ign);
+            return null;
         }
-		try {
-			ApiConfig config = new ApiConfig().setKey(Constants.API_KEY);
-			RiotApi api = new RiotApi(config);
-			Summoner summoner = api.getSummonerByName(Platform.OCE, summonerName);
-			Set<LeaguePosition> summonerRanks = api.getLeaguePositionsBySummonerId(Platform.OCE, summoner.getId());
-			for (LeaguePosition type : summonerRanks) {
-				if (type.getQueueType().equals("RANKED_SOLO_5x5")) {
-					String rank = "";
-					rank += WordUtils.capitalize(type.getTier().toLowerCase()) + " " + type.getRank();
-					return summonerName + " (" + rank + ")";
-				}
-			}
-		} catch (RiotApiException e) {
-			Main.output(e.toString());
-			return summonerName + " (Unranked)";
-		}
-		return summonerName + " (Unranked)";
-	}
+    }
+
+    public static String getSummonerName(String encrypted_id) {
+        try {
+            return new JSONObject(fetch(encrypted + encrypted_id)).getString("name");
+        } catch (Exception e) {
+            Main.output("Failed to get summoner name from encrypted id " + encrypted_id);
+            return null;
+        }
+    }
+
+    private static ArrayList<Rank> getSummonerRank(String ign) {
+        ArrayList<Rank> res = new ArrayList<>();
+        try {
+            String encryptedID = getSummonerEncryptedID(ign);
+            if (encryptedID == null) {
+                return null;
+            }
+            JSONArray ranks = new JSONArray(fetch(league + encryptedID));
+            
+            // Gets the highest rank
+            for (int i = 0; i < ranks.length(); i++) {
+                JSONObject obj = ranks.getJSONObject(i);
+                res.add(new Rank(obj.getString("tier"), obj.getString("rank")));
+            }
+            return res;
+        } catch (Exception e) {
+            Main.output("Failed to get summoner rank");
+            Main.output(e.toString());
+            return null;
+        }
+    }
+
+    private static ArrayList<Rank> getEncryptedRank(String encrypted) {
+        ArrayList<Rank> res = new ArrayList<>();
+        try {
+            if (encrypted == null) {
+                return null;
+            }
+            JSONArray ranks = new JSONArray(fetch(league + encrypted));
+            
+            // Gets the highest rank
+            for (int i = 0; i < ranks.length(); i++) {
+                JSONObject obj = ranks.getJSONObject(i);
+                res.add(new Rank(obj.getString("tier"), obj.getString("rank")));
+            }
+            return res;
+        } catch (Exception e) {
+            Main.output("Failed to get summoner rank");
+            Main.output(e.toString());
+            return null;
+        }
+    }
+
+    
+	public int getSummonerMMR(String ign) {
+        ArrayList<Rank> ranks = getSummonerRank(ign);
+
+		if (ign == null || ranks.size() == 0) {
+			return Constants.UNKNOWN_MMR;
+        }
+        int highestMMR = 0;
+        for (Rank rank : ranks) {
+            int MMR = tierMMR.get(rank.tier) + divisionMMR.get(rank.division);
+            if (highestMMR <= MMR) {
+                highestMMR = MMR;
+            }
+        }
+        Main.output("Successfully fetched summoner " + ign + " MMR as " + highestMMR);
+        return highestMMR == 0 ? Constants.DEFAULT_MMR : highestMMR;
+    }
+
+    public int getEncryptedMMR(String encrypted) {
+        ArrayList<Rank> ranks = getEncryptedRank(encrypted);
+
+		if (encrypted == null) {
+			return Constants.UNKNOWN_MMR;
+        }
+        int highestMMR = 0;
+        for (Rank rank : ranks) {
+            int MMR = tierMMR.get(rank.tier) + divisionMMR.get(rank.division);
+            if (highestMMR <= MMR) {
+                highestMMR = MMR;
+            }
+        }
+        Main.output("Successfully fetched summoner " + encrypted + " MMR as " + highestMMR);
+        return highestMMR == 0 ? Constants.DEFAULT_MMR : highestMMR;
+    }
+     
+	public static String getSummonerInfoString(String discord_id) {
+        String ign = Database.getSummonerFromDiscordID(discord_id);
+        String infoString = "Unknown (Unranked)";
+		if (ign == null) {
+			return infoString;
+        }
+        String encryptedID = Database.getEncryptedFromDiscordID(discord_id);
+        ArrayList<Rank> ranks = getEncryptedRank(encryptedID);
+        int highestMMR = 0;
+        for (Rank rank : ranks) {
+            RiotAPI api = new RiotAPI();
+            int MMR = api.tierMMR.get(rank.tier) + api.divisionMMR.get(rank.division);
+            if (highestMMR <= MMR) {
+                highestMMR = MMR;
+                infoString = ign + " (" + rank.tier.substring(0, 1) + rank.tier.substring(1).toLowerCase() + " " + rank.division + ")";
+            }
+        }
+		return highestMMR == 0 ? ign + " (Unranked)" : infoString;
+    }
 }
-
-

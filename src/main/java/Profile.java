@@ -30,18 +30,17 @@ public class Profile extends ListenerAdapter {
         Guild guild = event.getGuild();
 
         if (content.equalsIgnoreCase(".profile") && member.getRoles().contains(Constants.getMemberRole(guild))) {
-            String discord = user.getName() + "#" + user.getDiscriminator();
+            String discord_id = user.getId();
             
-            if (!Database.checkDiscordExists(discord)) {
-                Main.output("Failed to fetch profile query for " + discord);
-                channel.sendMessage(Embed.errorEmbed("Unknown Profile", "Sorry your discord tag did not match any profile :(" +
+            if (!Database.checkDiscordIDExists(discord_id)) {
+                Main.output("Failed to fetch profile query for " + discord_id);
+                channel.sendMessage(Embed.errorEmbed("Unknown Profile", "Sorry your discord account did not match any profile :(" +
                         "\nPlease contact a " + Constants.getDevRole(guild).getAsMention() + " if you require more info")).queue();
                 return;
             }
 
-            ResultSet result = Database.getProfileFromDiscord(discord);
-            ResultSet tftStats = Database.getTFTFromDiscord(discord);
-            channel.sendMessage(Embed.getProfileEmbed(result, tftStats)).queue();
+            ResultSet result = Database.getProfileFromDiscordID(discord_id);
+            channel.sendMessage(Embed.getProfileEmbed(result)).queue();
             return;
         } else if (content.equalsIgnoreCase(".profile help")) {
             channel.sendMessage(Embed.errorEmbed("Invalid Profile Command", "Please view the command usage below\n\n`.profile <discord>` – view a user's profile by discord"
@@ -51,29 +50,34 @@ public class Profile extends ListenerAdapter {
             if (content.split(" ").length == 1) {
                 Main.output("Invalid .profile command from " + user);
                 channel.sendMessage(Embed.errorEmbed("Invalid Profile Command", "Please view the command usage below\n\n`.profile <discord>` – view a user's profile by discord"
-                + "\n`.profile <summoner>` - view a user's profile by summoner name\n`.profile` - view your profile\n\nFor example `.profile Bruce#3218`")).queue();
+                + "\n`.profile <summoner>` - view a user's profile by summoner name\n`.profile` - view your profile\n\nFor example `.profile Bruce`")).queue();
                 return;
-            }
-            String discord = content.substring(9);
-            if (!discord.contains("#")) {
-                discord = Database.getDiscordFromSummoner(discord);
-                if (discord == null) {
-                    Main.output("Failed to fetch profile query for summoner name " + discord);
+            } 
+            // Param included is summoner
+            String param = content.substring(9);
+            if (!param.contains("#")) {
+                String discord_id = Database.getDiscordIDFromSummoner(param);
+                if (discord_id == null) {
+                    Main.output("Failed to fetch profile query for summoner name " + param);
                     channel.sendMessage(Embed.errorEmbed("Unknown Profile", "Sorry that summoner name did not match any profiles :(\nPlease view the command usage below\n\n`.profile <discord>` – view a user's profile by discord"
-                    + "\n`.profile <summoner>` - view a user's profile by summoner name\n`.profile` - view your profile\n\nFor example `.profile Bruce#3218`")).queue();
+                    + "\n`.profile <summoner>` - view a user's profile by summoner name\n`.profile` - view your profile\n\nFor example `.profile Bruce`")).queue();
                     return;
                 }
+                ResultSet result = Database.getProfileFromDiscordID(discord_id);
+                channel.sendMessage(Embed.getProfileEmbed(result)).queue();
+                return;
             }
-
-            if (!Database.checkDiscordExists(discord)) {
-                Main.output("Failed to fetch profile query for " + discord);
+            
+            // Param included is discord tag
+            String discord_id = Database.getDiscordIDFromDiscriminator(param);
+            if (!Database.checkDiscordIDExists(discord_id)) {
+                Main.output("Failed to fetch profile query for " + param);
                 channel.sendMessage(Embed.errorEmbed("Unknown Profile", "Sorry that discord tag did not match any profiles :(\nPlease view the command usage below\n\n`.profile <discord>` – view a user's profile by discord"
-                    + "\n`.profile <summoner>` - view a user's profile by summoner name\n`.profilec` - view your profile\n\nFor example `.profile Bruce#3218`")).queue();
+                    + "\n`.profile <summoner>` - view a user's profile by summoner name\n`.profile` - view your profile\n\nFor example `.profile Bruce`")).queue();
                     return;
             }
-            ResultSet result = Database.getProfileFromDiscord(discord);
-            ResultSet tftStats = Database.getTFTFromDiscord(discord);
-            channel.sendMessage(Embed.getProfileEmbed(result, tftStats)).queue();
+            ResultSet result = Database.getProfileFromDiscordID(discord_id);
+            channel.sendMessage(Embed.getProfileEmbed(result)).queue();
             return;
         }
     }

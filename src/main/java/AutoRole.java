@@ -23,10 +23,10 @@ public class AutoRole extends ListenerAdapter {
      * @param event Guild member join event
      */
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        String fullDiscordID = event.getUser().getName() + "#" + event.getUser().getDiscriminator();
-        Main.output("User " + fullDiscordID + " joined the server");
+        String discord_id = event.getUser().getId();
+        Main.output(event.getUser() + " joined the server");
 
-        if (Database.checkDiscordExists(fullDiscordID)) {
+        if (Database.checkDiscordIDExists(discord_id)) {
             event.getGuild().getTextChannelById(Constants.getCommitteeID())
                     .sendMessage(Embed.successEmbed("Member Registration Required",
                             event.getUser().getAsMention() + " has joined the server and requires the **Member** role")).queue();

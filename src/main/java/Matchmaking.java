@@ -11,11 +11,11 @@ import java.util.*;
  */
 public class Matchmaking {
 
-    private ArrayList<String> team1;
-    private ArrayList<String> team2;
+    private ArrayList<User> team1;
+    private ArrayList<User> team2;
     private int team1MMR;
     private int team2MMR;
-    private HashMap<String, Integer> summonerInfo;
+    private HashMap<User, Integer> summonerInfo;
     private RiotAPI api;
 
     public Matchmaking(ArrayList<User> players) {
@@ -26,17 +26,16 @@ public class Matchmaking {
         api = new RiotAPI();
         summonerInfo = new HashMap<>();
         for (User user : players) {
-            String discord = user.getName() + "#" + user.getDiscriminator();
-            String summoner = Database.getSummonerFromDiscord(discord);
-            summonerInfo.put(discord, api.fetchMMR(summoner));
+            String encrypted = Database.getEncryptedFromDiscordID(user.getId());
+            summonerInfo.put(user, api.getEncryptedMMR(encrypted));
         }
     }
 
-    public ArrayList<String> getTeam1() {
+    public ArrayList<User> getTeam1() {
         return team1;
     }
 
-    public ArrayList<String> getTeam2() {
+    public ArrayList<User> getTeam2() {
         return team2;
     }
 
@@ -59,18 +58,18 @@ public class Matchmaking {
         int teamSize = (int) Math.ceil(summonerMMR.length/2);
         Main.output("Drafting teams of " + teamSize + " with Bruce's MM algorithm");
 
-        ArrayList<String> allocated = new ArrayList<>();
+        ArrayList<User> allocated = new ArrayList<>();
 
         for (int i = summonerMMR.length-1; i >= 0; i--) {
             if (team1MMR <= team2MMR) {
-                for (String discord : summonerInfo.keySet()) {
-                    if (summonerInfo.get(discord) == summonerMMR[i] && !allocated.contains(discord)) {
-                        allocated.add(discord);
+                for (User player : summonerInfo.keySet()) {
+                    if (summonerInfo.get(player) == summonerMMR[i] && !allocated.contains(player)) {
+                        allocated.add(player);
                         if (team1.size() == teamSize) {
-                            team2.add(discord);
+                            team2.add(player);
                             team2MMR += summonerMMR[i];
                             for (int j = i-1; j >= 0; j--) {
-                                for (String d : summonerInfo.keySet()) {
+                                for (User d : summonerInfo.keySet()) {
                                     if (!allocated.contains(d)) {
                                         team2.add(d);
                                         team2MMR += summonerMMR[j];
@@ -80,20 +79,20 @@ public class Matchmaking {
                             }
                         } else {
                             team1MMR += summonerMMR[i];
-                            team1.add(discord);
+                            team1.add(player);
                             break;
                         }
                     }
                 }
             } else {
-                for (String discord : summonerInfo.keySet()) {
-                    if (summonerInfo.get(discord) == summonerMMR[i] && !allocated.contains(discord)) {
-                        allocated.add(discord);
+                for (User player : summonerInfo.keySet()) {
+                    if (summonerInfo.get(player) == summonerMMR[i] && !allocated.contains(player)) {
+                        allocated.add(player);
                         if (team2.size() == teamSize) {
-                            team1.add(discord);
+                            team1.add(player);
                             team1MMR += summonerMMR[i];
                             for (int j = i-1; j >= 0; j--) {
-                                for (String d : summonerInfo.keySet()) {
+                                for (User d : summonerInfo.keySet()) {
                                     if (!allocated.contains(d)) {
                                         team1.add(d);
                                         team1MMR += summonerMMR[j];
@@ -103,7 +102,7 @@ public class Matchmaking {
                             }
                         } else {
                             team2MMR += summonerMMR[i];
-                            team2.add(discord);
+                            team2.add(player);
                             break;
                         }
                     }

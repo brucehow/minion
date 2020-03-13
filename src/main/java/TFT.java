@@ -55,7 +55,6 @@ public class TFT extends ListenerAdapter {
             }
 
             post = guild.getTextChannelById(Constants.getLobbyPostID());
-
             lobbyPlayers = new ArrayList<User>();
 
             // TFT set variable
@@ -165,8 +164,8 @@ public class TFT extends ListenerAdapter {
         }
 
         // Checking for valid discord tag
-        String discordID = user.getName() + "#" + user.getDiscriminator();
-        if (!Database.checkDiscordExists(discordID)) {
+        String discordID = user.getId();
+        if (!Database.checkDiscordIDExists(discordID)) {
             user.openPrivateChannel().queue((privateChannel) -> {
                 privateChannel.sendMessage(Embed.errorEmbed("Registration Failed", Constants.registrationFailDiscord(discordID))).queue();
             });

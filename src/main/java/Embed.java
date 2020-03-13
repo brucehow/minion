@@ -23,6 +23,7 @@ public class Embed {
     private String desc;
     private String prefix;
     private String suffix;
+    private String[] options;
 
     /**
      * Create an error MessageEmbed
@@ -75,6 +76,17 @@ public class Embed {
     }
 
     /**
+     * Constructor for the integration with Lobbies
+     * @param title Title for the lobby
+     * @param desc Description for the lobby
+     */
+    public Embed(String title, String desc, String[] options) {
+        this.title = title;
+        this.desc = desc;
+        this.options = options;
+    }
+
+    /**
      * Generates the lobby embed for the particular object
      * @param guild The guild to generate for
      * @return The MessageEmbed object for the open lobby
@@ -86,13 +98,42 @@ public class Embed {
             suffix = "`0/10`\n`None`\n\n" + guild.getPublicRole().getAsMention() +" React to this post to automatically signup";
             eb.addField("**" + title + "**", prefix+suffix, true);
         } else {
-            suffix = "`" + Lobby.getLobbyPlayers().size() + "/10`\n`";
+            suffix = "`" + Lobby.getLobbyPlayers().size() + "/10`";
             for (User user : Lobby.getLobbyPlayers()) {
-                suffix += "\n" + user.getName() + "#" + user.getDiscriminator();
+                suffix += "\n`" + user.getName() + "#" + user.getDiscriminator() + "`";
             }
-            suffix += "`\n\n" + guild.getPublicRole().getAsMention() +" React to this post to automatically signup";
+            suffix += "\n\n" + guild.getPublicRole().getAsMention() +" React to this post to automatically signup";
             eb.addField("**" + title + "**", prefix+suffix, true);
         }
+        return eb.build();
+    }
+
+    public MessageEmbed getPollEmbed() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setColor(Color.decode("#f7ff68"));
+        String results = "";
+
+        for (int i = 0; i < options.length; i++) {
+            results += Poll.getEmoji()[i] + " `" + options[i] + "` - " + Poll.getPollVotes()[i] + " votes\n";
+        }
+
+        eb.addField("**" + title + "**", desc + "\n\u200eYour votes **cannot** be changed once selected.\n\u200e", true);
+        eb.addField("You may only vote for one of these options:", results + "\u200e", false);
+        eb.setFooter("React to the corresponding number below to vote", null);
+        return eb.build();
+    }
+
+    public MessageEmbed getPollEmbedEnd() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setColor(Color.decode("#f7ff68"));
+        String results = "";
+
+        for (int i = 0; i < options.length; i++) {
+            results += Poll.getEmoji()[i] + " `" + options[i] + "` - " + Poll.getPollVotes()[i] + " votes\n";
+        }
+
+        eb.addField("**" + title + "**", desc + "\n\u200eYour votes **cannot** be changed once selected.", true);
+        eb.addField("\u200e", results + "\u200e\n**This poll has ended!**", false);
         return eb.build();
     }
 
@@ -193,18 +234,18 @@ public class Embed {
      * @param team2 The second team
      * @return The MessageEmbed object for the open lobby
      */
-    public MessageEmbed getFullLobbyList(ArrayList<String> team1, ArrayList<String> team2, int team1mmr, int team2mmr) {
+    public MessageEmbed getFullLobbyList(ArrayList<User> team1, ArrayList<User> team2, int team1mmr, int team2mmr) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setColor(Color.decode("#f7ff68"));
 
         String players1 = "";
         String players2 = "";
 
-        for (String discord : team1) {
-            players1 += "\n" + discord + " - " + RiotAPI.fetchSummonerInfoString(discord);
+        for (User player : team1) {
+            players1 += "\n" + player.getAsMention() + " - " + RiotAPI.getSummonerInfoString(player.getId());
         }
-        for (String discord : team2) {
-            players2 += "\n" + discord + " - " + RiotAPI.fetchSummonerInfoString(discord);
+        for (User player : team2) {
+            players2 += "\n" + player.getAsMention() + " - " + RiotAPI.getSummonerInfoString(player.getId());
         }
 
         eb.addField("**" + title + "**", desc + "\n\nPlayers have been drafted into two equal teams based on individual rank\n\u200e", false);
@@ -227,11 +268,12 @@ public class Embed {
      * @param guild The guild to generate for
      * @return The MessageEmbed object for the open lobby
      */
-    public static MessageEmbed getProfileEmbed(ResultSet result, ResultSet tftResult) {
+    public static MessageEmbed getProfileEmbed(ResultSet result) {
         EmbedBuilder eb = new EmbedBuilder();
         String summoner = "Unknown";
         String position = null;
         String join_ts = "00/00/0000";
+        String end_ts = null;
         String rift_points = "0";
         String rift_rank = "Unranked";
         Guild emoteGuild = Main.jda.getGuildById(Constants.EMOTES_SERVER);
@@ -240,17 +282,13 @@ public class Embed {
         int losses = 0;
         int ace = 0;
         int mvp = 0;
-        int tftwins = 0;
-        int tftpoints = 0;
-        String avgrank = "0";
-        int topfour = 0;
-        int tftgames = 0;
         try {
             result.next();
-            tftResult.next();
             badges = result.getString("badges").split(",");
             summoner = result.getString("summoner");
             position = result.getString("position");
+            end_ts = result.getString("end_ts").split(" ")[0];
+            end_ts = end_ts.substring(0, 4);
             join_ts = result.getString("join_ts").split(" ")[0];
             join_ts = join_ts.substring(8, 10) + "/" + join_ts.substring(5, 7) + "/" + join_ts.substring(0, 4);
             rift_points = result.getString("points");
@@ -261,21 +299,19 @@ public class Embed {
             losses = Integer.parseInt(result.getString("losses"));
             mvp = Integer.parseInt(result.getString("mvp"));
             ace = Integer.parseInt(result.getString("ace"));
-            tftwins = Integer.parseInt(tftResult.getString("wins"));
-            tftpoints = Integer.parseInt(tftResult.getString("points"));
-            topfour = Integer.parseInt(tftResult.getString("topfour"));
-            avgrank = tftResult.getString("avgrank");
-            tftgames = tftResult.getShort("games");
         } catch (Exception e) {
             Main.output("Failed to get badges from user");
             e.printStackTrace();
         }
         if (position == null) {
             position = "";
+            if (end_ts.equals(Constants.membership.split("-")[0])) {
+                position += "\n" + Constants.year + " UWALC Member";
+            }
         } else {
             position = "\n" + position;
         }
-        eb.addField("**Member Info**", summoner + position + "\nMember since " + join_ts + "\n\u200e", false);
+        eb.addField("**Member Info**", summoner + position + "\nJoined on " + join_ts + "\n\u200e", false);
         if (badges != null && !badges[0].equals("Empty")) {
             String badgeList = "";
             for (String badge : badges) {
@@ -309,25 +345,11 @@ public class Embed {
             rift_rank = rift_rank + "th";
         }
 
-        double avgrankCalc = Double.parseDouble(avgrank);
-        avgrankCalc = avgrankCalc / tftgames;
-        avgrank = Integer.toString((int) Math.floor(avgrankCalc));
-        if (avgrank.endsWith("1") && !avgrank.endsWith("11")) {
-            avgrank = "**" + avgrank + "st**";
-        } else if (avgrank.endsWith("2") && !avgrank.endsWith("12")) {
-            avgrank = "**" + avgrank + "nd**";
-        } else if (avgrank.endsWith("3") && !avgrank.endsWith("13")) {
-            avgrank = "**" + avgrank + "rd**";
-        } else {
-            avgrank = avgrank + "th";
-        }
-        
         if (rift_rank.length() == 3 || rift_rank.equals("10th")) {
             rift_rank = "**" + rift_rank + "**";
         }
         eb.addField("**Rift Champions**", rift_points + " Points (" + rift_rank + ")\n" + wins + "W " + losses + "L " + 
         "(" + winrateDisplay + " WR)\n" + mvp + " MVP " + ace + " ACE\n\u200e", true);
-        eb.addField("**Teamfight Tacticians**", tftpoints + " Points\n" + tftwins + " W (" + topfour + " Top 4)\n" + avgrank + " Place Avg", true);
         eb.setFooter("Badges can be obtained through participation and accomplishments", null);
         return eb.build();
     }

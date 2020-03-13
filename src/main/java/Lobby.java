@@ -22,6 +22,7 @@ public class Lobby extends ListenerAdapter {
     private TextChannel general;
     private Embed lobby;
     private String title;
+    private TextChannel from;
 
     /**
      * Handles the lobby commands and its sub-commands
@@ -38,8 +39,9 @@ public class Lobby extends ListenerAdapter {
         String content = msg.getContentRaw();
         MessageChannel channel = event.getChannel();
         Guild guild = event.getGuild();
+        from = guild.getTextChannelById("608562039635574784");
 
-        if (content.equals(".lobby end")) {
+        if (content.equals(".lobby end")) { 
             if (member.getRoles().contains(Constants.getModRole(guild)) || Constants.isWhitelist(user)) {
                 channel.sendMessage(Embed.errorEmbed("Lobby Ended", "The lobby has been forcibly closed")).queue();
                 endLobby();
@@ -109,10 +111,10 @@ public class Lobby extends ListenerAdapter {
         }
 
         // Checking for valid discord tag
-        String discordID = user.getName() + "#" + user.getDiscriminator();
-        if (!Database.checkDiscordExists(discordID)) {
+        String discord_id = user.getId();
+        if (!Database.checkDiscordIDExists(discord_id)) {
             user.openPrivateChannel().queue((privateChannel) -> {
-                privateChannel.sendMessage(Embed.errorEmbed("Registration Failed", Constants.registrationFailDiscord(discordID))).queue();
+                privateChannel.sendMessage(Embed.errorEmbed("Registration Failed", Constants.registrationFailDiscord(discord_id))).queue();
             });
             return;
         }
@@ -157,8 +159,8 @@ public class Lobby extends ListenerAdapter {
 
         Matchmaking mm = new Matchmaking(lobbyPlayers);
         mm.bruceMM();
-        ArrayList<String> team1 = mm.getTeam1();
-        ArrayList<String> team2 = mm.getTeam2();
+        ArrayList<User> team1 = mm.getTeam1();
+        ArrayList<User> team2 = mm.getTeam2();
 
         // Sends an @everyone message and deletes it
         general.sendMessage(general.getGuild().getPublicRole().getAsMention()).queue(new Consumer<Message>() {
@@ -173,20 +175,20 @@ public class Lobby extends ListenerAdapter {
         // Admin handling
         EmbedBuilder eb = new EmbedBuilder();
         eb.addField("**" + title + "**", "Please run **.score win/lose** and **.score mvp** followed by the team of" +
-                " players.\nPlease include only one summoner name on each line. Teams are listed below\n", false);
+                " players.\nPlease include only one **summoner ID** on each line. Teams are listed below\n", false);
 
         String t1 = "Team 1\n";
         String t2 = "Team 2\n";
-        for (String disc : team1) {
-            t1 += disc + "\n";
+        for (User player : team1) {
+            t1 += "`" + player.getId() + "` - " + Database.getSummonerFromDiscordID(player.getId()) + "\n";
         }
-        for (String disc : team2) {
-            t2 += disc + "\n";
+        for (User player : team2) {
+            t2 += "`" + player.getId() + "` - " + Database.getSummonerFromDiscordID(player.getId()) + "\n";
         }
 
         eb.addField("\u200e", t1, true);
         eb.addField("\u200e", t2, true);
-        general.getGuild().getTextChannelById(Constants.getPointsID()).sendMessage(eb.build()).queue();
+        from.sendMessage(eb.build()).queue();
     }
 
     public static ArrayList<User> getLobbyPlayers() {
