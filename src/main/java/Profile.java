@@ -29,7 +29,11 @@ public class Profile extends ListenerAdapter {
         MessageChannel channel = event.getChannel();
         Guild guild = event.getGuild();
 
-        if (content.equalsIgnoreCase(".profile") && member.getRoles().contains(Constants.getMemberRole(guild))) {
+        if (content.equalsIgnoreCase(".profile")) {
+            if (!member.getRoles().contains(Constants.getMemberRole(guild))) {
+                channel.sendMessage(Embed.errorEmbed("Sorry!", "You must be an active UWALC member to use this command :(")).queue();;
+                return;
+            }
             String discord_id = user.getId();
             
             if (!Database.checkDiscordIDExists(discord_id)) {

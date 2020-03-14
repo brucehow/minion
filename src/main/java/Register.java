@@ -52,6 +52,10 @@ public class Register extends ListenerAdapter {
 
             // Check for discord ID
             GuildController controller = guild.getController();
+            if (!discord.contains("#")) {
+                channel.sendMessage(Embed.errorEmbed("Invalid Discord", "Discord is missing its discriminator and tag")).queue();
+                return;
+            }
             String[] id = discord.split("#");
             List<Member> memberList = guild.getMembersByName(id[0], true);
             Member mem = null;

@@ -26,12 +26,7 @@ public class AutoRole extends ListenerAdapter {
         String discord_id = event.getUser().getId();
         Main.output(event.getUser() + " joined the server");
 
-        if (Database.checkDiscordIDExists(discord_id)) {
-            event.getGuild().getTextChannelById(Constants.getCommitteeID())
-                    .sendMessage(Embed.successEmbed("Member Registration Required",
-                            event.getUser().getAsMention() + " has joined the server and requires the **Member** role")).queue();
-            Main.output(event.getUser() + " joined the server and requires the Member role");
-        } else {
+        if (!Database.checkDiscordIDExists(discord_id)) {
             int random = new Random().nextInt(Constants.header.length);
             Guild guild = event.getGuild();
             User user = event.getUser();
@@ -49,7 +44,31 @@ public class AutoRole extends ListenerAdapter {
      */
     @Override
     public void onMessageReactionAdd(MessageReactionAddEvent event) {
+        if (event.getUser().isBot()) {
+            return;
+        }
         MessageChannel channel = event.getChannel();
+
+        // Rules channel
+        if (event.getChannel().getId().equals(Constants.getRulesID())) {
+            Member member = event.getMember();
+            User user = event.getUser();
+            Guild guild = event.getGuild();
+            GuildController controller = guild.getController();
+
+            if (Database.checkActiveMember(user.getId())) {
+                if (!member.getRoles().contains(Constants.getMemberRole(guild))) {
+                    controller.addSingleRoleToMember(member, Constants.getMemberRole(guild)).complete();
+                }
+                Main.output(user + " has agreed to the rules - Member assigned");
+            } else {
+                if (!member.getRoles().contains(Constants.getGuestRole(guild))) {
+                    controller.addSingleRoleToMember(member, Constants.getGuestRole(guild)).complete();
+                }
+                Main.output(user + " has agreed to the rules - Guest assigned");
+            }
+            return;
+        }
 
         // Looking For Game role
         if (event.getMessageId().equals(Constants.getLFGMsgID())) {
@@ -57,7 +76,6 @@ public class AutoRole extends ListenerAdapter {
             User user = event.getUser();
             Guild guild = event.getGuild();
             GuildController controller = guild.getController();
-
             controller.addSingleRoleToMember(member, Constants.getLFGRole(guild)).complete();
             Main.output("Auto assigned the Looking For Game role to " + user);
 
@@ -65,7 +83,7 @@ public class AutoRole extends ListenerAdapter {
         }
 
         // Positional roles
-        if (channel.getId().equals(Constants.getClubRulesID())) {
+        if (channel.getId().equals(Constants.getAutoRoleID())) {
             Member member = event.getMember();
             User user = event.getUser();
             String reaction = event.getReaction().getReactionEmote().getName();
@@ -108,7 +126,23 @@ public class AutoRole extends ListenerAdapter {
      * @param event Message reaction received event
      */
     public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
+        if (event.getUser().isBot()) {
+            return;
+        }
         MessageChannel channel = event.getChannel();
+
+        // Rules channel
+        if (event.getChannel().getId().equals(Constants.getRulesID())) {
+            Member member = event.getMember();
+            User user = event.getUser();
+            Guild guild = event.getGuild();
+            GuildController controller = guild.getController();
+
+            controller.removeSingleRoleFromMember(member, Constants.getMemberRole(guild)).complete();
+            controller.removeSingleRoleFromMember(member, Constants.getGuestRole(guild)).complete();
+            Main.output(user + " has unagreed to the rules - Roles unassigned");
+            return;
+        }
 
         // "Looking For Game" role
         if (event.getMessageId().equals(Constants.getLFGMsgID())) {
@@ -123,7 +157,7 @@ public class AutoRole extends ListenerAdapter {
         }
 
         // Positional roles
-        if (channel.getId().equals(Constants.getClubRulesID())) {
+        if (channel.getId().equals(Constants.getAutoRoleID())) {
             Member member = event.getMember();
             User user = event.getUser();
             String reaction = event.getReaction().getReactionEmote().getName();

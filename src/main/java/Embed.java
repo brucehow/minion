@@ -64,6 +64,15 @@ public class Embed {
         return eb.build();
     }
 
+    public static MessageEmbed rulesEmbed(Guild guild) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.addField("**\u200e**", "**UWA League Club Rules**\n" + Constants.rulesIntro(guild), true);
+        eb.addField("\u200e", Constants.rulesMsg(guild), false);
+        eb.addField("\u200e", Constants.rulesMsg2(guild), false);
+        eb.setColor(Color.decode("#609af7"));
+        return eb.build();
+    }
+
     /**
      * Constructor for the integration with Lobbies
      * @param title Title for the lobby

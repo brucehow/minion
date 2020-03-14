@@ -15,15 +15,20 @@ public class Leaderboard extends ListenerAdapter {
         }
 
         User user = event.getAuthor();
+        Member member = event.getMember();
         Message msg = event.getMessage();
         String content = msg.getContentRaw();
         MessageChannel channel = event.getChannel();
         Guild guild = event.getGuild();
 
 
-        if (content.equals(".riftchampions")) {
+        if (content.equals(".riftchampions") || content.equals(".leaderboard") ) {
+            if (!member.getRoles().contains(Constants.getMemberRole(guild))) {
+                channel.sendMessage(Embed.errorEmbed("Sorry!", "You must be an active UWALC member to use this command :(")).queue();;
+                return;
+            }
             EmbedBuilder eb = new EmbedBuilder();
-            eb.addField("**Rift Champions 2020**", "\nCurrent standings for **Rift Champions** are as follows:\n\u200e", false);
+            eb.addField("**Rift Champions " + Constants.year + "**", "\nCurrent standings for Rift Champions are as follows:\n\u200e", false);
             eb.setColor(Color.decode("#609af7"));
 
             ResultSet result = Database.getRiftChampionLeaderboard();
@@ -31,6 +36,7 @@ public class Leaderboard extends ListenerAdapter {
             int count = 1;
             String countDisplay = "";
             String standings = "";
+
             try {
                 while(result.next()) {
                     Emote icon = guild.getEmotesByName("iron", false).get(0);
@@ -61,24 +67,14 @@ public class Leaderboard extends ListenerAdapter {
                     standings += "**`" + countDisplay + ".`** " + icon.getAsMention() + " **`" + points + " pts`**  " + result.getString("summoner") + "\n";
                     count++;
                 }
-            } catch (SQLException e) {
-                Main.output(e.toString());
-            }
-            eb.addField("**Top Ranked Members**", standings, false);
-            channel.sendMessage(eb.build()).queue();
-        }
+                    
+                eb.addField("**Top 20 Ranked Members**", standings, true);
 
-        if (content.equals(".riftchampions 2")) {
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.addField("**Rift Champions 2020**", "\nCurrent standings for **Rift Champions** are as follows:\n\u200e", false);
-            eb.setColor(Color.decode("#609af7"));
-
-            ResultSet result = Database.getRiftChampionLeaderboardPage2();
-            Main.output("Leaderboard fetch query received by user " + user);
-            int count = 1;
-            String countDisplay = "";
-            String standings = "";
-            try {
+                result = Database.getRiftChampionLeaderboardPage2();
+                count = 1;
+                countDisplay = "";
+                standings = "";
+                
                 while(result.next()) {
                     Emote icon = guild.getEmotesByName("iron", false).get(0);
                     String points = result.getString("points");
@@ -111,7 +107,7 @@ public class Leaderboard extends ListenerAdapter {
             } catch (SQLException e) {
                 Main.output(e.toString());
             }
-            eb.addField("**Top Ranked Members**", standings, false);
+            eb.addField("\u200e", standings, true);
             channel.sendMessage(eb.build()).queue();
         }
     }
