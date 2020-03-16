@@ -13,6 +13,13 @@ Users who join the Rift Champions lobby will be automatically drafted into even 
 
 More info on the League of Legends API reference can be found [here](https://developer.riotgames.com/api-methods/).
 
+## [2.1.0.a] - 2020-03-14
+
+### Added
+- Rules embed for generating rules
+  - Users must comply with the rules to access the server
+  - Guest/Member roles automatically assigned based on database entries
+
 ## [2.1.0] - 2020-03-13
 
 ### Added
