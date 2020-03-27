@@ -33,10 +33,14 @@ public class RiotAPI {
 		tierMMR.put("SILVER", 1000);
 		tierMMR.put("GOLD", 1500);
 		tierMMR.put("PLATINUM", 2000);
-		tierMMR.put("DIAMOND", 2500);
-		tierMMR.put("MASTER", 3000);
+        tierMMR.put("DIAMOND", 2500);
+        tierMMR.put("MASTER", 2500);
+		tierMMR.put("GRANDMASTER", 2500);
+        tierMMR.put("CHALLENGER", 2500);
+        /* Trial D1 rank limitation
+        tierMMR.put("MASTER", 3000);
 		tierMMR.put("GRANDMASTER", 3500);
-		tierMMR.put("CHALLENGER", 4000);
+		tierMMR.put("CHALLENGER", 4000);*/
 
 		divisionMMR = new HashMap<>();
 		divisionMMR.put("IV", 100);
