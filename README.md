@@ -13,7 +13,7 @@ Users who join the Rift Champions lobby will be automatically drafted into even 
 
 More info on the League of Legends API reference can be found [here](https://developer.riotgames.com/api-methods/).
 
-## [2.1.0.b] - 2020-03-14
+## [2.1.0.b] - 2020-08-04
 
 ### Added
 - Wiki information for project handover
